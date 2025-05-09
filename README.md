@@ -44,7 +44,7 @@ conda env create --file environment.yaml
 Activate the environment with:
 
 ```bash
-conda activate bayesflow-env
+conda activate bf
 ```
 
 ### 3. Start amortizing!
