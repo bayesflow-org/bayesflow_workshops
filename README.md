@@ -18,10 +18,11 @@ In recent years, a new class of **simulation-based inference (SBI)** methods has
 The repository is organized into **one folder per workshop**, each containing self-contained materials:
 
 
-- Each `workshop_x` folder contains:
-  - 📓 **Jupyter Notebooks**: Interactive code examples and exercises  
+- Each `workshop` folder contains:
+  - 📓 **Jupyter Notebooks**: Interactive code examples and exercises
   - 📁 **Data**: Supporting datasets (if any)  
   - 📄 **README**: Brief instructions and learning goals for the specific workshop
+  - 🛠️ **Helpers**: Utility functions and modules to simplify common tasks or reduce boilerplate
 
 ---
 
@@ -51,4 +52,3 @@ conda activate bf
 
 ## 🤝 Contributing
 If you find a bug, have suggestions, or want to contribute improvements or additional workshop content, feel free to open an issue or submit a pull request.
-
