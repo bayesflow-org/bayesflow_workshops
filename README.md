@@ -28,12 +28,22 @@ The repository is organized into **one folder per workshop**, each containing se
 
 ## ⚙️ Getting Started
 
-### 1. Clone the repository
+### 1. Get the Workshop Materials
+
+You can either **clone the repository** (if you're familiar with Git) or **download it as a ZIP**.
+
+#### 🔧 Option 1: Clone with Git (recommended)
 
 ```bash
 git clone https://github.com/your-username/bayesflow-workshops.git
 cd bayesflow-workshops
 ```
+
+#### 📦 Option 2: Download ZIP
+1. Click the green "Code" button
+2. Select "Download ZIP"
+3. Extract the ZIP file and navigate into the folder
+
 
 ### 2. Set up the environment
 Make sure you have conda installed. Then create the environment from the provided file:
