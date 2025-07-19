@@ -46,10 +46,10 @@ cd bayesflow-workshops
 
 
 ### 2. Set up the environment
-Make sure you have conda installed. Then create the environment from the provided file:
+Make sure you have conda installed. Then create the environment from the corresponding workshop folder, e.g.:
 
 ```bash
-conda env create --file environment.yaml
+conda env create --file [workshop]/environment.yaml
 ```
 
 Activate the environment with:

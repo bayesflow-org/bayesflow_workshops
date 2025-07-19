@@ -1,0 +1,16 @@
+name: bf
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python >=3.10,<3.13
+  - pip
+  - pip:
+      - numpy<2.0
+      - ssm-simulators
+      - bayesflow
+      - jax
+      - jupyter
+      - jupyterlab
+      - ipython
+      - ipykernel
