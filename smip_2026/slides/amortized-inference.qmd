@@ -1,7 +1,6 @@
 ---
-title: "Amortized Bayesian Inference"
-subtitle: "with BayesFlow"
-author: "Šimon Kucharský"
+title: "Amortized Bayesian Inference with Bayesflow"
+author: "Paul Bürkner based on materials of Šimon Kucharský"
 format:
   beamer:
     theme: "metropolis"
@@ -14,13 +13,7 @@ format:
         \usepackage{subcaption}
         \setbeamertemplate{footline}
         {\begin{beamercolorbox}[sep=1ex]{author in head/foot} \rlap{\textit{\insertshorttitle}}\hfill\insertauthor\hfill\llap{\insertframenumber}        \end{beamercolorbox}}
-    # revealjs: 
-    #   theme: default
-    #   slide-number: true
-    #   html-math-method: mathjax
-    #   highlight-style: github
-    #   footer: "Amortized Bayesian Inference"
-    #   logo: ../figures/bayesflow-logo.png
+        \AtBeginEnvironment{thebibliography}{\scriptsize}
 csl: ../apa.csl
 bibliography: ../bibliography.bib
 ---
@@ -45,7 +38,7 @@ Use generative neural networks
 ## Inference network
 
 - A generative neural network $q_\phi(\theta \mid x)$
-  - Normalizing flow, flow matching, ...
+  - Normalizing flow, ... (more to come tomorrow)
   - Model the distribution of *parameters*, conditioned on data
 
 Goal: 
@@ -55,8 +48,8 @@ $$p(\theta \mid x) \approx q_\phi(\theta \mid x)$$
 ## Role of "data"
 
 - $x$ conditions the generative network
-  - Normalizing flows: Input to coupling network (usually MLP)
-  - Flow matching: Input to the vector field network (usually MLP)
+  - Normalizing flows: Input to a coupling network (usually MLP)
+  - Other architectures: Input to a vector field network (usually MLP)
 
 $\rightarrow$ Must be of fixed dimensions
 
@@ -84,9 +77,9 @@ $$p(\theta \mid x) \approx q_\phi(\theta \mid h_\psi(x))$$
 
 $$
 \begin{aligned}
-\hat{\phi}, \hat{\psi} = \operatorname*{argmin}_{\phi, \psi} & \mathbb{E}_{x \sim p(x)} \mathbb{KL}\big[p(\theta \mid x) || q_\phi(\theta \mid h_\psi(x))\big] = \\
-= \operatorname*{argmin}_{\phi, \psi} & \mathbb{E}_{x \sim p(x)} \mathbb{E}_{\theta \sim p(\theta \mid x)} \log \frac{p(\theta \mid x)}{q_\phi(\theta \mid h_\psi(x))} \propto \\
-\propto \operatorname*{argmin}_{\phi, \psi} & - \mathbb{E}_{(x, \theta) \sim p(x, \theta)} \log q_\phi(\theta \mid h_\psi(x)) \approx\\
+\hat{\phi}, \hat{\psi} = \operatorname*{argmin}_{\phi, \psi} & \mathbb{E}_{x \sim p(x)} \left[ \mathbb{KL}\big[p(\theta \mid x) \; || \; q_\phi(\theta \mid h_\psi(x))\big] \right] \\
+= \operatorname*{argmin}_{\phi, \psi} & \mathbb{E}_{x \sim p(x)} \left[ \mathbb{E}_{\theta \sim p(\theta \mid x)} \left[ \log \frac{p(\theta \mid x)}{q_\phi(\theta \mid h_\psi(x))} \right] \right]  \\
+\propto \operatorname*{argmin}_{\phi, \psi} & - \mathbb{E}_{(x, \theta) \sim p(x, \theta)} \left[ \log q_\phi(\theta \mid h_\psi(x)) \right] \\
 \approx \operatorname*{argmin}_{\phi, \psi} & - \frac{1}{S}\sum_{s=1}^S \log q_\phi(\theta^{(s)} \mid h_\psi(x^{(s)}))
 \end{aligned}
 $$
@@ -112,44 +105,33 @@ $\rightarrow$ must be able to generate samples $(x^{(s)}, \theta^{(s)}) \sim p(x
 
 $\rightarrow$ Amortized inference: Pay upfront the cost of inference during training, making subsequent inference effective
 
+## Non-Amortized Bayesian Inference
+
+</br>
+![](../figures/non-amortized.pdf){width=100%}
+
 ## Amortized Bayesian Inference
 
 </br>
-![](../figures/abi.svg){width=100%}
-
-For more info, see @radev2020bayesflow
+![](../figures/amortized.pdf){width=100%}
 
 # Working with `bayesflow`
 
-## BayesFlow [@radev2023bayesflow]
+## BayesFlow 2.0 [@kuhmichelBayesFlow2026]
 
-- Python library
-- Implementation of common neural architectures to make ABI easier
-- Helper functions for simulation, configuration, training, validation, diagnostics,...
-
-
-## Old version
-
-- Build on `TensorFlow`
-- Previous projects build with it
-- Bespoke syntax, not that transparent
-- Stale development (no new features), being deprecated
-- [stable legacy branch on GitHub](https://github.com/bayesflow-org/bayesflow/tree/stable-legacy){target="_blank"}
-- `pip install git+https://github.com/bayesflow-org/bayesflow@stable-legacy`
-
-## New version
-
-- Built on `keras`
+- Python library built on `keras3`
   - `TensorFlow`, `JAX`, or `PyTorch` as a backend
-- Modern interface, more transparent, faster
-- Released very recently
-- Active development, future standard
-- [main branch on GitHub](https://github.com/bayesflow-org/bayesflow/){target="_blank"}
-- `pip install git+https://github.com/bayesflow-org/bayesflow@main`
+- Implementation of common neural architectures to make ABI easier
+- Helper functions for simulation, configuration, training, validation, diagnostics, ...
+- Website: [bayesflow.org](https://bayesflow.org/)
+- Github: [github.com/bayesflow-org/bayesflow](https://github.com/bayesflow-org/bayesflow/)
+- Forums: [discuss.bayesflow.org](https://discuss.bayesflow.org/)
+- Install release version: `pip install bayesflow`
+- Install dev version: `pip install git+https://github.com/bayesflow-org/bayesflow@dev`
 
 ## General workflow
 
-![](https://raw.githubusercontent.com/bayesflow-org/bayesflow/dev/img/bayesflow_landing_light.jpg)
+![](../figures/bf_landing_light.png)
 
 
 ## Ingredients
@@ -263,7 +245,9 @@ def likelihood(mu, n):
     x = np.random.normal(mu, 1, size=n)
     return dict(x=x)
 
-simulator = bf.make_simulator([prior, likelihood], meta_fn=context)
+simulator = bf.make_simulator(
+  [prior, likelihood], meta_fn=context
+)
 
 simulator.sample(10)
 ```
@@ -271,9 +255,9 @@ simulator.sample(10)
 ## Padding vs batched context
 
 - Both approaches work
-- Batched context is a bit cleaner 
+- Batched context (via `meta_fn`) is a bit cleaner 
   - Do not have to fiddle with masking
-  - Limited useability (cannot effectivelly use in offline mode)
+  - Limited useability (cannot effectively use in offline mode)
 - Padding
   - More verbose
   - More general
@@ -317,7 +301,7 @@ Various options available, see the [Two Moons Example](https://github.com/bayesf
 :::
 
 :::{.column width=50%}
-### Flow matching
+### Flow matching / diffusion models
 
 - Fast training
 - More expressive
@@ -329,7 +313,7 @@ Various options available, see the [Two Moons Example](https://github.com/bayesf
 
 - **Affine coupling** for low-dimensional, uni-modal posteriors
 - **Spline coupling** for harder posteriors, including multi-modal
-- **Flow matching** for highly complex posteriors
+- **Flow matching or diffusion models** for highly complex posteriors
   - or when inference speed is not of concern
   - or if GPUs available
 
@@ -356,7 +340,7 @@ summary_network = bf.networks.DeepSet()
 
 ### Time series, Sequences, ...
 
-- RNNs, CNNs, Transformers, ...
+- RNNs (e.g., LSTN), Time Series Transformers, ...
 
 ```{.python filename="Python"}
 summary_network = bf.networks.LSTNet()
@@ -387,6 +371,7 @@ adapter = (bf.Adapter()
 )
 ```
 
+\small
 - Transform variables
   - `.standardize`
   - `.sqrt`, `.log`
@@ -556,7 +541,8 @@ If $q(\theta \mid y^{\text{sim}}) = p(\theta \mid y^{\text{sim}})$, then the ran
 ```{.python filename="Python"}
 fig=bf.diagnostics.calibration_histogram(
     estimates=posterior, 
-    targets=prior)
+    targets=prior
+)
 ```
 
 </br>
@@ -568,7 +554,8 @@ fig=bf.diagnostics.calibration_histogram(
 ```{.python filename="Python"}
 fig=bf.diagnostics.calibration_ecdf(
     estimates=posterior, 
-    targets=prior)
+    targets=prior
+)
 ```
 
 </br>
@@ -581,7 +568,8 @@ fig=bf.diagnostics.calibration_ecdf(
 fig=bf.diagnostics.calibration_ecdf(
     estimates=posterior, 
     targets=prior,
-    difference=True)
+    difference=True
+)
 ```
 
 </br>
@@ -591,8 +579,8 @@ fig=bf.diagnostics.calibration_ecdf(
 ## SBC interpretation
 
 - Necessary but not sufficient condition
-  - ✅ All faithful approximators should pass the SBC check
-  - ⚠️ An unfaithful approximator may pass the SBC check
+  - All faithful approximators should pass the SBC check
+  - An unfaithful approximator may pass the SBC check
 - Depends on 
   - Simulation budget (how many datasets)
   - Approximation precision (how many posterior draws per data set)
@@ -628,7 +616,8 @@ $$
 ```{.python filename="Python"}
 fig=bf.diagnostics.plots.z_score_contraction(
     estimates=posterior, 
-    targets=prior)
+    targets=prior
+)
 ```
 
 </br>
@@ -640,7 +629,10 @@ fig=bf.diagnostics.plots.z_score_contraction(
 - Plot the true parameter values $\theta^{\text{sim}}$ against a posterior point estimate (mean, median)
 
 ```{.python filename="Python"}
-fig=bf.diagnostics.plots.recovery(estimates=posterior, targets=prior)
+fig=bf.diagnostics.plots.recovery(
+  estimates=posterior, 
+  targets=prior
+)
 ```
 
 ![](../figures/recovery.png){fig-align="center"}
@@ -734,7 +726,7 @@ In addition to learning $p(\theta \mid x)$:
 - Fast inference needed, e.g.
   - Fitting hundreds of datasets
   - Online estimation (e.g., during an experimental setup) 
-- Intractable models
+- Intractable models (models without analytic likelihood density)
 
 
 ---
@@ -752,4 +744,6 @@ Resources:
 - [BayesFlow repository](https://github.com/bayesflow-org/bayesflow/){target="_blank"}: contribute, submit bug reports, feature requests   
 
 
-## References {.smaller}
+## References
+
+\scriptsize
