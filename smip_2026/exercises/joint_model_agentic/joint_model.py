@@ -1,3 +1,12 @@
+"""
+Implements model M_1c from [1].
+
+[1] Ghaderi-Kangavari, A., Rad, J. A., & Nunez, M. D. (2023). 
+A general integrative neurocognitive modeling framework to jointly 
+describe EEG and decision-making on single trials. 
+Computational Brain & Behavior, 6(3), 317-376.
+"""
+
 import numpy as np
 from numba import njit
 
