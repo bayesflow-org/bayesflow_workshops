@@ -1,7 +1,7 @@
 # 🧠 BayesFlow Workshop Materials
 
 Welcome to the official repository for **BayesFlow workshop materials**!  
-This repo contains hands-on resources and code examples designed to help you learn and apply modern Bayesian inference techniques using the **[BayesFlow](https://github.com/bayesflow-org/bayesflow)** library.
+This repo contains hands-on resources and code examples designed to help you learn and apply modern amortized Bayesian inference using the **[BayesFlow](https://github.com/bayesflow-org/bayesflow)** library.
 
 ---
 
