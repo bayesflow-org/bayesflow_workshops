@@ -1,6 +1,6 @@
 ---
 title: "Introduction to Simulation-Based Inference"
-author: "Paul Bürkner based on material of Šimon Kucharský"
+author: "Paul Bürkner based on materials of Šimon Kucharský"
 format:
   beamer:
     theme: "metropolis"
@@ -70,6 +70,9 @@ $$
 
 Modern overview: @cranmer2020frontier
 
+## Likelihood-Based vs. Simulation-Based Inference
+
+![](../figures/lbi-vs-sbi.pdf){fig-align="center" height=70%}
 
 ## Surrogate likelihood
 
@@ -118,10 +121,10 @@ observed = 7
 posterior = prior[x == observed] 
 ```
 
-##
+## Build your own rejection sampler
 
 \Large
-Time for exercise `rejection-sampling.ipynb`
+Time for exercise `rejection-sampling`
 
 ## Approximate Bayesian Computation (ABC)
 
