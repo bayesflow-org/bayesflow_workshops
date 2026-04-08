@@ -8,5 +8,6 @@ dependencies:
   - pip:
       - bayesflow>=2.0.10
       - jax
+      - numba>=0.65.0
       - ipykernel
       - ipywidgets
