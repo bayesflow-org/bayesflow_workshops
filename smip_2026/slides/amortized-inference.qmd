@@ -115,6 +115,28 @@ $\rightarrow$ Amortized inference: Pay upfront the cost of inference during trai
 </br>
 ![](../figures/amortized.pdf){width=100%}
 
+## Breakeven points
+
+:::: {.columns}
+
+::: {.column width="60%"}
+![](../figures/breakeven_points.png){width=95%}
+:::
+
+::: {.column width="40%"}
+**MCMC**:
+
+- No upfront training
+- 5.66 seconds for 10k posterior draws
+
+**Amortized Inference**:
+
+- 23 seconds upfront training
+- 0.07 seconds for 10k posterior draws
+:::
+
+::::
+
 # Working with `bayesflow`
 
 ## BayesFlow 2.0 [@kuhmichelBayesFlow2026]
@@ -673,7 +695,14 @@ $\rightarrow$ Approximator may not be trusted
   - Visual checks - histograms, ecdf plots, scatter plots, ...
   - Comparing summary statistics - means, variances, ... 
 
-## Use summary space
+## The Danger of Amortization Gaps
+
+If the real-world test data looks different from the simulated training data, ABI may become inaccurate!
+
+![@schmitt2023detecting](../figures/mms_implications.png){height = 70%}
+
+
+## Use summary space for out-of-distribution detection
 
 - Add a base distribution to the summary network, e.g.
 
@@ -683,25 +712,21 @@ summary_network = bf.networks.Deepset(base_distribution="normal")
 
 ![@schmitt2023detecting](../figures/model_misspecification_amortized_sbi.png)
 
+## Learn the Posterior of a Simple Model with BayesFlow
+
+\Large
+Time for exercise `bayesflow-normal`
+
 # Conclusion
 
 ## Uses of BayesFlow
 
 In addition to learning $p(\theta \mid x)$:
 
-  - Generative modeling tasks
+  - Generative modeling tasks (unrelated to Bayesian inference)
   - Surrogate likelihood: $p(x \mid \theta)$ [@radev2023jana]
   - Model comparison: $p(\mathcal{M} \mid x)$ [@radev2021amortized;@elsemuller2024deep]
   - Amortized point estimation: $\hat{\theta}$ [@sainsbury2024likelihood]
-
-## Complex models
-
-- Think about possible factorizations of the model
-  - Split the problem into multiple smaller pieces
-
-- Examples:
-  - Multilevel models [@habermann2024amortized]
-  - Mixture models [@kucharsky2025amortized]
 
 ---
 
@@ -723,10 +748,10 @@ In addition to learning $p(\theta \mid x)$:
 
 #### When to use ABI
 
+- Intractable models (models without analytic likelihood density)
 - Fast inference needed, e.g.
   - Fitting hundreds of datasets
   - Online estimation (e.g., during an experimental setup) 
-- Intractable models (models without analytic likelihood density)
 
 
 ---
@@ -745,5 +770,3 @@ Resources:
 
 
 ## References
-
-\scriptsize
