@@ -1,0 +1,604 @@
+---
+title: "Generative Neural Networks"
+author: "Šimon Kucharský"
+format:
+    revealjs: 
+        theme: default
+        slide-number: true
+        html-math-method: mathjax
+        highlight-style: github
+        footer: "Amortized Bayesian Inference"
+        logo: ../figures/bayesflow-logo.png
+---
+
+## Generative models
+
+Learn $p_X$ given a set of training data $x_i, \dots, x_n$
+
+![](../figures/generative-models.png){width=100%, fig-align="center"}
+
+- Sampling $x \sim p_X$
+- Density evaluation $p_X(x)$
+
+## Mixture model
+
+Weighted sum of multiple simpler distributions, e.g., Normal
+$$p_X(X) = \sum_k^K w_k \times \text{Normal}(X; \mu_k, \sigma_k)$$
+
+- Sampling and evaluating straightforward
+- Theoretically can represent any distribution
+- Practically, does not scale well
+
+## Many architectures
+
+- Markov random fields [@li2009markov]
+- Generative adversarial networks [GAN, @goodfellow2014generative]
+- Variational autoencoders [VAE, @kingma2013auto]
+- Diffusion models [@song2020score]
+- Consistency models [@song2023consistency]
+- **Normalizing flows** [@kobyzev2020normalizing;@papamakarios2021normalizing]
+- **Flow matching** [@lipman2022flow]
+
+## Common idea
+
+Map $p_X$ to a base distribution $p_Z$ through some operation $g$
+
+$$
+x \sim g(z) \text{ where } z \sim p_Z 
+$$
+
+![[Source: learnopencv.com](https://learnopencv.com/generative-and-discriminative-models/)](https://learnopencv.com/wp-content/uploads/2020/10/begin_gan.jpg){fig-align="center"}
+
+# Normalizing flows
+
+## Normalizing flows
+
+Built on invertible transformations of random variables
+
+- Find $f$ such that $f(X) = Z \sim \text{Normal}(0, I)$
+  - $f$ *normalizes* $X$
+
+::: {#fig-normalizing-flow layout="[[-10, 1, -10], [10, 1, 10]]"}
+
+$f$
+
+![](../figures/normalizing-flow/x_1.svg)
+
+$$\rightarrow$$ 
+
+![](../figures/normalizing-flow/x_4.svg)
+
+Forward direction
+:::
+
+## Sampling
+
+- Sample $z \sim p_Z$ (e.g., Normal)
+- Obtain $x = f^{-1}(z)$
+
+</br>
+
+::: {#fig-normalizing-flow-rev layout="[[-10, 1, -10], [10, 1, 10]]"}
+
+$f^{-1}$
+
+![](../figures/normalizing-flow/x_1.svg)
+
+$$\leftarrow$$ 
+
+![](../figures/normalizing-flow/x_4.svg)
+
+Backward direction
+:::
+
+## Density evaluation
+
+Change of variables formula
+
+$$
+p_X(x) = p_Z(f(x)) \left| \det{J}_f(x) \right|
+$$
+
+- Express $p_X$ using $p_Z$ and the transform $f$
+- $\left| \det{J}_f(x) \right|$: Absolute value of the determinant of the Jacobian matrix
+  - "Jacobian" for short 
+  - Volume correction term
+
+## Change of variables - intuition
+
+:::: {.columns}
+
+::: {.column width="50%"}
+$$Z \sim \text{Uniform}(0, 1)$$
+:::
+
+::: {.column width="50%"}
+
+:::
+
+::::
+
+## Change of variables - intuition
+
+:::: {.columns}
+
+::: {.column width="50%"}
+$$Z \sim \text{Uniform}(0, 1)$$
+
+![](../figures/uniform.svg)
+:::
+
+::: {.column width="50%"}
+
+:::
+
+::::
+
+
+## Change of variables - intuition
+
+:::: {.columns}
+
+::: {.column width="50%"}
+$$Z \sim \text{Uniform}(0, 1)$$
+
+![](../figures/uniform.svg)
+:::
+
+::: {.column width="50%"}
+$$X = 2Z - 1$$
+:::
+::::
+
+## Change of variables - intuition
+
+:::: {.columns}
+
+::: {.column width="50%"}
+$$Z \sim \text{Uniform}(0, 1)$$
+
+![](../figures/uniform.svg)
+:::
+
+::: {.column width="50%"}
+$$X = 2Z - 1$$
+
+![](../figures/uniform-rescaled.svg)
+:::
+::::
+
+## Change of variables - affine transform
+
+$$f: Z = a X + b$$
+
+
+- shift by $b$: no effect
+- scale by a constant $a$: multiply by $a$
+
+$$p_X(x) = p_Z(f(x)) \times a$$
+
+## Change of variables - affine transform
+
+</br>
+
+#### Example
+
+:::: {.columns}
+::: {.column width="50%"}
+$$
+\scriptsize
+\begin{aligned}
+p_Z(z) & = \frac{1}{\sqrt{2\pi}} \exp\left(-\frac{1}{2} z^2 \right) \\[10pt]
+f: Z & = \frac{(X - \mu)}{\sigma} \\
+\end{aligned}
+$$
+:::
+
+::: {.column width="50%"}
+$$
+\scriptsize
+\begin{aligned}
+p_X(x) & = p_Z(f(x)) \times a \\[10pt]
+ & = \frac{1}{\sqrt{2\pi}} \exp\left(-\frac{1}{2} f(x)^2 \right) \times a \\[10pt]
+ & = \frac{1}{\sigma\sqrt{2\pi}} \exp\left(-\frac{1}{2} \left(\frac{x-\mu}{\sigma}\right)^2 \right)
+\end{aligned}
+$$
+:::
+::::
+
+
+
+## Change of variables - more formally
+
+$$
+p_X(x) = p_Z(f(x))  \left| \frac{d}{dx} f(x) \right|
+$$
+
+
+## Change of variables - more formally
+
+$$
+p_X(x) = p_Z(f(x))  \left| \frac{d}{dx} f(x) \right|
+$$
+
+#### Example
+
+::::{.columns}
+
+:::{.column width="50%"}
+$$
+\scriptsize
+\begin{align}
+f: Z & = \log(X) \\[10pt]
+p_Z(z) & = \frac{1}{\sqrt{2\pi}} \exp\left(-\frac{1}{2} z^2 \right)
+\end{align}
+$$
+:::
+
+:::{.column width="50%"}
+$$
+\scriptsize
+\begin{align}
+\frac{d}{dx} f(x) & = \frac{d}{dx} \log(x) = \frac{1}{x} \\[10pt]
+p_X(x) & = \frac{1}{x\sqrt{2\pi}} \exp\left(-\frac{1}{2} \log(x)^2\right)
+\end{align}
+$$
+:::
+::::
+
+## Change of variables - multivariate
+
+$$
+p_X(x) = p_Z(f(x)) \left| \det{J}_f(x) \right|
+$$
+
+</br>
+
+$$
+J_f(x) = \begin{bmatrix}
+\frac{\partial z_1}{\partial x_1} & \dots & \frac{\partial z_1}{\partial x_K} \\
+\vdots & \ddots & \vdots \\
+\frac{\partial z_K}{\partial x_1} & \dots & \frac{\partial z_K}{\partial x_K}
+\end{bmatrix}
+$$
+
+
+## Change of variables - multivariate
+
+$$f\left(\begin{bmatrix}x_1 \\ x_2\end{bmatrix}\right) = \begin{bmatrix} x_1^2 x_2 \\ 3x_1 + \sin x_2 \end{bmatrix} = \begin{bmatrix}z_1 \\ z_2\end{bmatrix}$$
+
+</br>
+
+$$J_f(x) = \begin{bmatrix}
+\frac{\partial z_1}{\partial x_1} & \frac{\partial z_1}{\partial x_2} \\
+\frac{\partial z_2}{\partial x_1} & \frac{\partial z_2}{\partial x_2}
+\end{bmatrix} = \begin{bmatrix} 2x_1x_2 & x_1^2 \\ 3 & \cos x_2 \end{bmatrix}
+$$
+
+
+## Normalizing flow
+
+$$
+p_X(x) = p_Z(f(x)) \left| \det{J}_f(x) \right|
+$$
+
+Define a $f$ as a neural network with trainable weights $\phi$
+
+</br>
+
+### Training
+
+Maximum likelihood (or rather: negative log likelihood)
+
+$$
+\arg \min_\phi - \sum_{i=1}^n \log p_Z(f(x_i \mid \phi)) + \log \left| \det{J}_f(x_i \mid \phi) \right|
+$$
+
+## Flow $f$
+
+</br>
+
+### Challenge
+
+- Sampling: Invertible ($f^{-1}$)
+- Training: 
+  - Differentiable
+  - Computationally efficient jacobian
+- Expressive to represent non-trivial distributions
+
+## Flow composition
+
+Invertible and differentiable functions are "closed" under composition
+
+$$
+f = f_L \circ f_{L-1} \circ \dots \circ f_1 \\ 
+$$
+
+::: {#fig-flow-composition layout="[[-10, 1, -10, 1, -10, 1, -10], [10, 1, 10, 1, 10, 1, 10]]"}
+
+$f_1$ 
+
+$f_2$ 
+
+$f_3$ 
+
+
+![](../figures/normalizing-flow/x_1.svg)
+
+$\rightarrow$ 
+
+![](../figures/normalizing-flow/x_2.svg)
+
+$\rightarrow$
+
+![](../figures/normalizing-flow/x_3.svg)
+
+$\rightarrow$
+
+![](../figures/normalizing-flow/x_4.svg)
+
+Flow composition in forward direction
+:::
+
+## Flow composition - inverse
+
+To invert a flow composition, we invert individual flows and run them in the opposite order
+
+$$
+f^{-1} = f_1^{-1} \circ f_2 ^{-1} \circ \dots \circ f_L^{-1} \\ 
+$$
+
+::: {#fig-flow-composition layout="[[-10, 1, -10, 1, -10, 1, -10], [10, 1, 10, 1, 10, 1, 10]]"}
+
+$f_1^{-1}$ 
+
+$f_2^{-1}$ 
+
+$f_3^{-1}$ 
+
+
+![](../figures/normalizing-flow/x_1.svg)
+
+$\leftarrow$ 
+
+![](../figures/normalizing-flow/x_2.svg)
+
+$\leftarrow$
+
+![](../figures/normalizing-flow/x_3.svg)
+
+$\leftarrow$
+
+![](../figures/normalizing-flow/x_4.svg)
+
+Flow composition in backward (inverse) direction
+:::
+
+## Flow composition - Jacobian
+
+- Chain rule
+$$
+\left| \det{J}_f(x) \right| = \left| \det \prod_{l=1}^L J_{f_l}(x)\right| = \prod_{l=1}^L \left| \det{J}_{f_l}(x)\right|
+$$
+
+- if we have a Jacobian for each individual transformation, then we have a Jacobian for their composition
+$$
+\arg \min_\phi \sum_{i=1}^n \log p_Z(f(x_i \mid \phi)) + \sum_{l=1}^L \log \left| \det{J}_{f_l}(x_i \mid \phi) \right|
+$$
+
+## Linear flow
+
+:::{.incremental}
+$$
+f(x) = Ax + b
+$$
+
+- inverse: $f^{-1}(z) = A^{-1}(x - b)$
+- Jacobian: $\left| \det{J}_f(x) \right| = \left| \det{A} \right|$
+
+- Limitations:
+  1. Not expressive (composition of linear functions is a linear function)
+  2. Jacobian/inverse may be in $\mathcal{O}(p^3)$
+:::
+
+## Coupling flows
+
+- *Increasing* expresiveness while potentially *decreasing* computational costs
+- A *coupling flow* is a way to construct non-linear flows
+
+1. Split the data in two disjoint subsets: $x = (x_A, x_B)$
+2. Compute parameters conditionally on one subset: $\theta(x_A)$
+3. Apply transformation to the other subset: $z_B = f(x_B \mid \theta(x_A))$
+4. Concatenate $z = (x_A, z_B)$
+
+## Coupling flow: Forward
+
+</br>
+
+![](../figures/coupling-layer-forward.svg){fig-align="center"}
+
+## Coupling flow: Inverse
+
+</br>
+
+![](../figures/coupling-layer-backward.svg){fig-align="center"}
+
+## Coupling flow trick
+
+- Jacobian
+
+$$ J_f = 
+\begin{bmatrix}
+\text{I} & 0 \\
+\frac{\partial}{\partial x_A}f(x_B \mid \theta(x_A)) & J_f(x_B \mid \theta(x_A))
+\end{bmatrix}
+$$
+
+- Determinant
+
+$$
+\det{J}_f = \det(\text{I}) \times \det{J}_f(x_B \mid \theta(x_A)) = \det{J}_f(x_B \mid \theta(x_A))
+$$
+
+
+## Coupling flow trick
+
+- $f(x_B\mid\theta(x_A))$ needs to be differentiable and invertible
+  - easy to calculate determinant Jacobian... 
+- $\theta(x_A)$ can be arbitrarily complex
+  - non-linear,
+  - non-invertible
+  - $\rightarrow$ neural network
+
+</br>
+
+- Stack multiple coupling blocks and permute $x_{A}$ and $x_{B}$
+
+
+## Affine coupling [@dinh2016density]
+
+- $\theta(x_A)$: Trainable coupling networks, e.g., MLP
+  - Output: Shift $\mu$ and scale $\sigma$ 
+- Linear (affine) transform function $f(x_B\mid\theta(x_A)) = \frac{x_B - \mu(x_A)}{\sigma(x_A)}$
+
+- Jacobian: $-\log{\sigma(x_A)}$
+
+## Spline coupling [@muller2019neural]
+
+
+::::{.columns}
+
+:::{.column width=50%}
+- Transformation: Splines
+  - "Piecewise polynomials"
+- More expressive
+- Easier to overfit
+- Slower at training and inference
+:::
+
+:::{.column width=50%}
+
+![Figure from @durkan2019neural](../figures/spline-transform.png)
+
+:::
+
+
+::::
+
+
+## Exercise - Moons
+
+Build your own affine coupling normalizing flow!
+
+</br>
+
+:::: {.columns}
+
+::: {.column width="50%"}
+### Forward
+
+{{< video ../exercises/normalizing-flow-forward.mp4 width="500" height="350">}}
+:::
+
+::: {.column width="50%"}
+### Backward
+
+{{< video ../exercises/normalizing-flow-backward.mp4 width="500" height="350">}}
+:::
+
+::::
+
+## Idea
+
+- Normalizing flows transform X into Z in a set of discrete steps
+- But why not take one smooth/continuous transformation?
+
+# Flow matching [@lipman2022flow]
+
+Essentials from an extensive tutorial by @lipman2024flowmatchingguidecode available at [https://neurips.cc/virtual/2024/tutorial/99531](https://neurips.cc/virtual/2024/tutorial/99531){target="_blank"}.
+
+## Flow matching
+
+- Defines a flow that transforms a distribution over time
+  - $p_{t=0} = p_z$ - Base distribution 
+  - $p_{t=1} = q = p_x$ - Data distribution
+
+</br>
+
+![@lipman2024flowmatchingguidecode](../figures/marginal-probability-path.png){fig-align="center"}
+
+## Flow and velocity
+
+- Flow defines $X_t = \phi_t(X_0)$
+- Time dependent vector field: $\frac{d}{dt} \phi_t(x) = u_t(\phi_t(x))$
+- Model $u_t$ with a neural network
+
+</br>
+
+![@lipman2024flowmatchingguidecode](../figures/velocity.png){fig-align="center"}
+
+## Flow matching
+$$
+\begin{aligned}
+\mathbb{E}_{t, X_t}|| u_{t,\theta}(X_t) - u_t(X_t) ||^2 \\ t\sim\text{Uniform}(0,1) \\ X_t \sim p_t(X_t)
+\end{aligned}
+$$
+
+![@lipman2024flowmatchingguidecode](https://raw.githubusercontent.com/facebookresearch/flow_matching/refs/heads/main/assets/teaser.png){fig-align="center"}
+
+## Conditional Flow Matching {.smaller}
+
+Linear probability path
+
+$$X_t = (1-t) X_0 + t X_1$$
+
+Velocity
+
+$$u_t(X_t \mid X_1, X_0) = X_1 - X_0$$
+
+![@lipman2024flowmatchingguidecode](../figures/linear-probability-path.png)
+
+## Conditional Flow Matching
+
+</br>
+$$
+\begin{aligned}
+\mathbb{E}_{t, X_t}|| u_{t,\theta}\big(\underbrace{(1-t) X_0 + t X_1)}_{X_t}\big) - (\underbrace{X_1-X_0}_{u_t}) ||^2 \\ t\sim\text{Uniform}(0,1) \\ X_0 \sim p_0 \\ X_1 \sim p_1
+\end{aligned}
+$$
+
+## Conditional vs Marginal paths
+
+::: {#fig-normalizing-flow layout="[10, 10]"}
+
+![Conditional path](https://mlg.eng.cam.ac.uk/blog/assets/images/flow-matching/vector-field-samples-cond.png)
+
+![Marginal path](https://mlg.eng.cam.ac.uk/blog/assets/images/flow-matching/vector-field-samples-marginal.png)
+
+@fjelde2024introduction
+:::
+
+## Optimal transport {.smaller}
+
+- Independent coupling $p(X_0, X_1) = p(X_0) p(X_1)$
+- Optimal transport coupling $p(X_0, X_1) = \pi(X_0, X_1)$
+  - Minimise transport cost (e.g., Wasserstein distance)
+  - For batches [@pooladian2023multisample]
+
+::: {#fig-optimal-transport}
+![](https://mlg.eng.cam.ac.uk/blog/assets/images/flow-matching/mog2mog-cond-paths-one-color-ot.png)
+
+@fjelde2024introduction
+
+:::
+
+## Exercise
+
+{{< video ../exercises/flow-matching-datasaurus.mp4 width="800">}}
+
+## Exercise
+
+![](../exercises/flow-matching-swiss-roll.png){fig-align="center"}
+
+
+## References
