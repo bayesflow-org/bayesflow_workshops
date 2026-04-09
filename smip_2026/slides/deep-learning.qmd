@@ -187,7 +187,7 @@ $$
  
 ## Multi-Layer Perceptron in Code
 
-```{.python filename="Python" code-line-numbers="3-9"}
+```{.python filename="Python"}
 import keras
 
 network = keras.models.Sequential([
@@ -205,26 +205,6 @@ z = network(x)
 z.shape # TensorShape([100, 2])
 ```
 
-## Multi-Layer Perceptron in Code
-
-```{.python filename="Python" code-line-numbers="11-16"}
-import keras
-
-network = keras.models.Sequential([
-    keras.Input((3,)),
-    keras.layers.Dense(4, activation="relu"),   # 3 in, 4 out
-    keras.layers.Dense(4, activation="relu"),   # 4 in, 4 out
-    keras.layers.Dense(2, activation="softmax") # 4 in, 2 out
-])
-network.summary()
-
-x = keras.random.normal((100, 3))
-x.shape # TensorShape([100, 3])
-
-z = network(x) 
-z.shape # TensorShape([100, 2])
-```
-
 # Activation functions
 
 ## Why activation functions?
@@ -239,7 +219,6 @@ z.shape # TensorShape([100, 2])
 
 ## What is an activation function?
 
-:::{.incremental}
 - Basic idea: Neuron "firing activity" based on its internal state
 - Requirements:
   - Non-linearity (expressiveness)
@@ -247,7 +226,6 @@ z.shape # TensorShape([100, 2])
   - Efficiency (scalability)
 - Many options [@kunc2024three]
   - [https://keras.io/api/layers/activations/](https://keras.io/api/layers/activations/)
-:::
 
 
 ## Activation functions
@@ -304,7 +282,7 @@ $$
 
 1. Network
     - What is the network architecture?
-    - What are the parameters of the network $\theta$?
+    - What are the parameters of the network?
 2. Data
     - What information do we have available?
 3. Goal

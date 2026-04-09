@@ -451,10 +451,12 @@ $$
 
 ## Coupling flow trick
 
-- $f(x_B\mid\theta(x_A))$ needs to be differentiable and invertible
-  - easy to calculate determinant Jacobian... 
+- $f(x_B\mid\theta(x_A))$ needs to be
+  - differentiable
+  - invertible
+  - easy determinant of the Jacobian
 - $\theta(x_A)$ can be arbitrarily complex
-  - non-linear,
+  - non-linear
   - non-invertible
   - $\rightarrow$ neural network
 

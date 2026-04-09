@@ -48,7 +48,7 @@ $$
 ## Classic alternatives
 
 - Approximate $p(\theta \mid x)$ 
-  - Markov Chain Monte Carlo (MCMC): $\theta \propto p(\theta) \times p(x \mid \theta)$
+  - Markov Chain Monte Carlo (MCMC): $p(\theta \mid x) \propto p(\theta) \times p(x \mid \theta)$
 - Obtain point estimates:
   - Maximum likelihood: $\hat{\theta} = \operatorname*{argmax}_{\theta} p(x \mid \theta)$
   - Maximum aposteriori: $\hat{\theta} = \operatorname*{argmax}_{\theta} p(\theta) \times p(x \mid \theta)$
@@ -60,7 +60,7 @@ $$
 
 - "Likelihood-free"
 - When we cannot even evaluate $p(x \mid \theta)$
-- Approximate using sampling
+- Approximate using simulations 
 
 #### Examples
 
@@ -140,8 +140,8 @@ $$
 
 ## Issues
 
-- Curse of dimensionality
 - Computationally expensive
+- Curse of dimensionality
 - Handcrafted summary statistics
 
 
@@ -187,7 +187,7 @@ Pay the cost of inference upfront during training, receive benefits later
 ### Training
 - Train neural networks
 - Simulated data and parameters
-- Learn the maping between data and parameters
+- Learn the mapping between data and parameters
 - Slow, resource consuming process
 :::
 
