@@ -126,3 +126,6 @@ dmypy.json
 
 # extra quarto files
 smip_2026/slides/*_files/
+
+smip_2026/exercises/joint_model_agentic/joint_model-paul.py
+smip_2026/exercises/joint_model_agentic/joint_model-paul-ai.py
